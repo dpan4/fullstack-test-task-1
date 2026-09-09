@@ -66,4 +66,4 @@ jobs:
           POSTGRES_HOST: localhost
           PGPORT: 5433
           REDIS_URL: redis://localhost:6379/0
-        run: cd backend && pytest --cov=src -v
+        run: cd backend && pytest --cov=src -v --cov-report=xml
