@@ -89,7 +89,7 @@ export function FileList({ files, isLoading, onRefresh }: FileListProps) {
                 <td className="text-nowrap">
                   <Button
                     as="a"
-                    href={`http://localhost:8000/files/${file.id}/download`}
+                    href={`${process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8000'}/files/${file.id}/download`}
                     variant="outline-primary"
                     size="sm"
                   >

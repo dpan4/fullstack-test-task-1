@@ -51,10 +51,20 @@ def extract_file_metadata(file_id: str) -> None:
             return
 
         stored_path = STORAGE_DIR / file_item.stored_name
-        if not stored_path.exists():
+        if not stored_path.exists() or not stored_path.is_file() or stored_path.is_symlink():
             file_item.processing_status = "failed"
             file_item.scan_status = file_item.scan_status or "failed"
-            file_item.scan_details = "stored file not found during metadata extraction"
+            file_item.scan_details = "stored file not found, not a regular file, or is a symlink"
+            session.commit()
+            send_file_alert.delay(file_id)
+            return
+
+        # ограничение на размер (макс 100 МБ)
+        max_size = 100 * 1024 * 1024
+        if file_item.size > max_size:
+            file_item.processing_status = "failed"
+            file_item.scan_status = "failed"
+            file_item.scan_details = f"file exceeds maximum size limit ({max_size} bytes)"
             session.commit()
             send_file_alert.delay(file_id)
             return
