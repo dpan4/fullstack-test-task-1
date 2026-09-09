@@ -35,15 +35,23 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
         with:
           python-version: '3.12'
-      - run: pip install uv
-      - run: uv pip install --system -e backend/
-      - run: uv pip install --system bandit skylos
-      - run: bandit -r backend/src -ll -f json -o bandit-report.json || true
-      - run: skylos backend/src --output=skylos-report.json || true
-      - name: Run tests
+
+      - name: Install dependencies
+        run: |
+          pip install -r backend/requirements.txt bandit skylos pytest pytest-cov
+
+      - name: Run Bandit
+        run: bandit -r backend/src -ll
+
+      - name: Run Skylos
+        run: skylos backend/src
+
+      - name: Run Pytest
         env:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
@@ -51,21 +59,4 @@ jobs:
           POSTGRES_HOST: localhost
           PGPORT: 5433
           REDIS_URL: redis://localhost:6379/0
-        run: |
-          cd backend
-          pytest --cov=src --cov-report=xml
-      - name: Upload coverage
-        uses: codecov/codecov-action@v4
-        with:
-          file: ./backend/coverage.xml
-          fail_ci_if_error: true
-      - name: Upload bandit report
-        uses: actions/upload-artifact@v4
-        with:
-          name: bandit-report
-          path: bandit-report.json
-      - name: Upload skylos report
-        uses: actions/upload-artifact@v4
-        with:
-          name: skylos-report
-          path: skylos-report.json
+        run: cd backend && pytest --cov=src -v

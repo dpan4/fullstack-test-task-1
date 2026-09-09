@@ -9,100 +9,126 @@
 - Генерация алертов по результатам обработки
 - REST API с полной OpenAPI-документацией
 
-## Требования
-- Python 3.12+
-- Docker и Docker Compose (опционально)
-- PostgreSQL и Redis (можно запустить через Docker)
-- Пакеты: `fastapi`, `celery`, `sqlalchemy`, `structlog`, `filetype`, `psycopg2-binary`
-
-## Установка зависимостей
+## 1. Клонирование репозитория
 
 ```bash
-cd backend
-python -m venv venv
-source venv/bin/activate  # или venv\Scripts\activate на Windows
-pip install -r requirements.txt
+git clone https://github.com/dpan4/fullstack-test-task-1/
+cd fullstack-test-task
 ```
 
-## Настройка окружения
+## 2. Настройка окружения
 
 Конфигурация проекта содержится в файле `.env.dev` (используется по умолчанию в `docker-compose.dev.yml`).
 
-Если запускаете сервис локально без Docker, создайте его копию под именем `.env`:
+Для локального запуска без Docker создайте копию `.env.dev` как `.env`:
 
 ```bash
 cp .env.dev .env
 ```
-Пример содержимого .env.dev
+
+Пример содержимого `.env.dev` (или `.env`):
 
 ```
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
 POSTGRES_DB=test
-POSTGRES_HOST=localhost  # или backend-db при использовании Docker
+POSTGRES_HOST=localhost      # или backend-db при использовании Docker
 PGPORT=5433
 REDIS_URL=redis://localhost:6379/0
 ```
 
-## Запуск с Docker (рекомендуется)
+## 3. Запуск
+
+### Вариант А: Docker Compose (рекомендуется)
 
 ```bash
-docker-compose -f docker-compose.dev.yml up -d
+docker-compose -f docker-compose.dev.yml up -d --build
 ```
 
-После запуска cервисы доступны по адресам:
+После запуска сервисы доступны по адресам:
 - Бэкенд: http://localhost:8000
 - Документация API: http://localhost:8000/docs
 - Фронтенд: http://localhost:3000
 
-## Локальный запуск (без Docker)
+### Вариант Б: Локальный запуск (без Docker)
 
-1. Запустите PostgreSQL и Redis вручную.
-2. Примените миграции (если есть):
-   ```bash
-   alembic upgrade head
-   ```
-3. Запустите Uvicorn:
-   ```bash
-   uvicorn src.app:app --reload --host 0.0.0.0 --port 8000
-   ```
-4. В отдельном терминале запустите Celery worker:
-   ```bash
-   celery -A src.tasks.celery_app worker -l info
-   ```
+**Бэкенд:**
 
-## Запуск тестов
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate          # или venv\Scripts\activate на Windows
+pip install -r requirements.txt
+```
+
+Примените миграции (если есть):
+
+```bash
+alembic upgrade head
+```
+
+Запустите Uvicorn:
+
+```bash
+uvicorn src.app:app --reload --host 0.0.0.0 --port 8000
+```
+
+В отдельном терминале запустите Celery worker:
+
+```bash
+celery -A src.tasks.celery_app worker -l info
+```
+
+**Фронтенд:**
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Фронтенд будет доступен по адресу http://localhost:3000.
+
+## 4. Тестирование и статический анализ
+
+Прогон тестов с покрытием:
 
 ```bash
 pytest --cov=src -v
 ```
 
-Для запуска с покрытием и генерацией отчёта в XML:
+Для генерации отчёта в XML:
+
 ```bash
 pytest --cov=src --cov-report=xml
 ```
 
-## Проверка качества кода
+Проверка безопасности:
 
 ```bash
 bandit -r src -ll
+```
+
+Проверка качества кода:
+
+```bash
 skylos src
 ```
 
-## CI/CD (GitHub Actions)
+## 5. CI/CD
 
-При каждом push и pull-request автоматически запускаются:
+В репозитории настроен GitHub Actions (`.github/workflows/ci.yml`). При каждом push и pull-request автоматически запускаются:
 - `bandit` (безопасность)
 - `skylos` (чистота кода)
 - `pytest --cov=src` (тесты с покрытием)
 
-Файл конфигурации: `.github/workflows/ci.yml`
-
 ## Переменные окружения для тестов
 
 Тесты используют тестовую БД, задаваемую через переменные:
+
 ```bash
 export POSTGRES_USER=postgres POSTGRES_PASSWORD=postgres POSTGRES_DB=test POSTGRES_HOST=localhost PGPORT=5433
 ```
+
 Если БД запущена в Docker, укажите `POSTGRES_HOST=localhost` (или `127.0.0.1`).
 Для Redis в тестах используется `REDIS_URL=redis://localhost:6379/0`.
