@@ -5,9 +5,11 @@ build/
 dist/
 wheels/
 *.egg-info
+venv_new/
 
 # Virtual environments
 .venv
 .idea
 **/.DS_Store
 backend/storage/*
+

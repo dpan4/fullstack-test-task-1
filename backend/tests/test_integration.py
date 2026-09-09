@@ -5,19 +5,19 @@ from sqlalchemy import select, delete
 from src.app import app
 from src.service import STORAGE_DIR
 from src.models import StoredFile, Alert
-from src.service import async_session_maker
+from src.service import async_session_maker, engine
 from sqlalchemy import select
 from pathlib import Path
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture(scope="function")
 def event_loop():
-    loop = asyncio.get_event_loop_policy().new_event_loop()
+    loop = asyncio.new_event_loop()
     yield loop
     loop.close()
 
 
-@pytest.fixture
+@pytest.fixture(scope="function")
 async def async_client():
     transport = ASGITransport(app=app)
     async with AsyncClient(transport=transport, base_url="http://test") as client:
@@ -28,9 +28,12 @@ async def async_client():
 async def cleanup_db():
     yield
     async with async_session_maker() as session:
+        await session.rollback()
         await session.execute(delete(Alert))
         await session.execute(delete(StoredFile))
         await session.commit()
+        await session.close()
+    await engine.dispose()
     for file in STORAGE_DIR.glob("*"):
         if file.is_file():
             file.unlink()
@@ -166,7 +169,6 @@ class TestDownloadIntegrity:
 
 class TestDeleteRegression:
     @pytest.mark.asyncio
-    @pytest.mark.xfail(reason="Known bug: DELETE returns 500 due to cascade delete issue")
     async def test_delete_file_returns_204(self, async_client: AsyncClient):
         content = b"File to delete"
         files = {"file": ("delete.txt", content, "text/plain")}

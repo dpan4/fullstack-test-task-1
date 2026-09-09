@@ -1,7 +1,9 @@
 from datetime import datetime
 
+from typing import List
+
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, JSON, String, func
-from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
 
 class Base(DeclarativeBase):
@@ -34,12 +36,17 @@ class StoredFile(Base):
         nullable=False,
     )
 
+    alerts: Mapped[List["Alert"]] = relationship(
+        "Alert", back_populates="file", cascade="all, delete-orphan"
+    )
+
 
 class Alert(Base):
     __tablename__ = "alerts"
 
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     file_id: Mapped[str] = mapped_column(String(36), ForeignKey("files.id"), nullable=False)
+    file: Mapped["StoredFile"] = relationship("StoredFile", back_populates="alerts")
     level: Mapped[str] = mapped_column(String(50), nullable=False)
     message: Mapped[str] = mapped_column(String(500), nullable=False)
     created_at: Mapped[datetime] = mapped_column(

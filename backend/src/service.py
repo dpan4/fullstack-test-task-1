@@ -18,7 +18,7 @@ DB_URL = (
     f"{os.environ.get('POSTGRES_PASSWORD')}@{os.environ.get('POSTGRES_HOST')}:"
     f"{os.environ.get('PGPORT')}/{os.environ.get('POSTGRES_DB')}"
 )
-engine = create_async_engine(DB_URL)
+engine = create_async_engine(DB_URL, pool_size=0, max_overflow=-1, pool_pre_ping=True, pool_recycle=1, isolation_level="AUTOCOMMIT")
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
 
