@@ -13,3 +13,5 @@ venv_new/
 **/.DS_Store
 backend/storage/*
 
+promt/
+
