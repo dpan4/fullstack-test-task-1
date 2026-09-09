@@ -8,6 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 
 from src.models import Alert, StoredFile
+from src.validation import validate_file_magic
 
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -47,6 +48,9 @@ async def create_file(title: str, upload_file: UploadFile) -> StoredFile:
     if not content:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="File is empty")
 
+    mime_type = upload_file.content_type or mimetypes.guess_type(upload_file.filename or "")[0] or "application/octet-stream"
+    validate_file_magic(content, upload_file.filename or "", mime_type)
+
     file_id = str(uuid4())
     suffix = Path(upload_file.filename or "").suffix
     stored_name = f"{file_id}{suffix}"
@@ -58,7 +62,7 @@ async def create_file(title: str, upload_file: UploadFile) -> StoredFile:
         title=title,
         original_name=upload_file.filename or stored_name,
         stored_name=stored_name,
-        mime_type=upload_file.content_type or mimetypes.guess_type(stored_name)[0] or "application/octet-stream",
+        mime_type=mime_type,
         size=len(content),
         processing_status="uploaded",
     )
