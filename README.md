@@ -8,13 +8,11 @@
 - Извлечение метаданных (количество строк, символов, страниц)
 - Генерация алертов по результатам обработки
 - REST API с полной OpenAPI-документацией
-- Фронтенд на Next.js с разбивкой на слои (types, api, hooks, components)
 
 ## Требования
 - Python 3.12+
 - Docker и Docker Compose (опционально)
 - PostgreSQL и Redis (можно запустить через Docker)
-- Node.js 20+ (для фронтенда)
 - Пакеты: `fastapi`, `celery`, `sqlalchemy`, `structlog`, `filetype`, `psycopg2-binary`
 
 ## Установка зависимостей
@@ -28,9 +26,16 @@ pip install -r requirements.txt
 
 ## Настройка окружения
 
-Создайте файл `.env` в корне проекта со следующими переменными:
+Конфигурация проекта содержится в файле `.env.dev` (используется по умолчанию в `docker-compose.dev.yml`).
 
-```env
+Если запускаете сервис локально без Docker, создайте его копию под именем `.env`:
+
+```bash
+cp .env.dev .env
+```
+Пример содержимого .env.dev
+
+```
 POSTGRES_USER=postgres
 POSTGRES_PASSWORD=postgres
 POSTGRES_DB=test
@@ -45,7 +50,7 @@ REDIS_URL=redis://localhost:6379/0
 docker-compose -f docker-compose.dev.yml up -d
 ```
 
-После запуска:
+После запуска cервисы доступны по адресам:
 - Бэкенд: http://localhost:8000
 - Документация API: http://localhost:8000/docs
 - Фронтенд: http://localhost:3000
@@ -64,12 +69,6 @@ docker-compose -f docker-compose.dev.yml up -d
 4. В отдельном терминале запустите Celery worker:
    ```bash
    celery -A src.tasks.celery_app worker -l info
-   ```
-5. Для фронтенда:
-   ```bash
-   cd frontend
-   npm install
-   npm run dev
    ```
 
 ## Запуск тестов
