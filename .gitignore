@@ -7,11 +7,28 @@ wheels/
 *.egg-info
 venv_new/
 
-# Virtual environments
+# Virtual environments & IDEs
 .venv
 .idea
 **/.DS_Store
+
+# Storage & Local data
 backend/storage/*
 
+# Prompts & Work dirs
 promt/
 
+# OS & Editor temp files / Caches
+.~lock.*
+.fuse_hidden*
+opencode.json
+.skylos/cache/
+
+# Logs, Test artifacts & Coverage
+*.log
+backend/.coverage
+coverage.xml
+
+# Scratch / Test scripts
+test.py
+backend/test.py
