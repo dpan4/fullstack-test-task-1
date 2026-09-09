@@ -1,20 +1,109 @@
-## Тестовое задание на позицию Fullstack разработчика (Python + React)
+# Запуск проекта
 
-**Вводные:**
-1. Здесь представлен MVP проект файлообменника. Он позволяет загружать файлы, проверяет их на подозрительный контент и отправляет алерты;
-2. Репозиторий содержит в себе бэкенд и фронтенд части;
-3. В обоих частях присутствуют баги, неоптимизированный код, неудачные архитектурные решения.
+**Сервис для загрузки, сканирования и управления файлами** с асинхронной обработкой через Celery, валидацией по байтовым сигнатурам и структурированным логированием в JSON.
 
-**Задачи:**
-1. Проведите рефакторинг бэкенда, не ломая бизнес-логики: предложите свое видение архитектуры и реализуйте его;
-2. (Дополнительно) На бэкенде есть возможность неочевидной оптимизации - выполните ее;
-3. (Дополнительно) Разбейте логику фронтенда на слои;
+Ключевые возможности:
+- Загрузка файлов с проверкой MIME-типа и расширения (Magic Bytes)
+- Асинхронное сканирование на угрозы (с расширениями и размером)
+- Извлечение метаданных (количество строк, символов, страниц)
+- Генерация алертов по результатам обработки
+- REST API с полной OpenAPI-документацией
+- Фронтенд на Next.js с разбивкой на слои (types, api, hooks, components)
 
-**Запуск:**
-1. ```docker compose -f docker-compose.dev.yml up```
-2. ```docker exec -it backend alembic upgrade head```
+## Требования
+- Python 3.12+
+- Docker и Docker Compose (опционально)
+- PostgreSQL и Redis (можно запустить через Docker)
+- Node.js 20+ (для фронтенда)
+- Пакеты: `fastapi`, `celery`, `sqlalchemy`, `structlog`, `filetype`, `psycopg2-binary`
 
+## Установка зависимостей
 
-**Открыть фронт:** ```http://localhost:3000/test``` 
+```bash
+cd backend
+python -m venv venv
+source venv/bin/activate  # или venv\Scripts\activate на Windows
+pip install -r requirements.txt
+```
 
-**Открыть бэк:** ```http://localhost:8000/docs```
+## Настройка окружения
+
+Создайте файл `.env` в корне проекта со следующими переменными:
+
+```env
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=postgres
+POSTGRES_DB=test
+POSTGRES_HOST=localhost  # или backend-db при использовании Docker
+PGPORT=5433
+REDIS_URL=redis://localhost:6379/0
+```
+
+## Запуск с Docker (рекомендуется)
+
+```bash
+docker-compose -f docker-compose.dev.yml up -d
+```
+
+После запуска:
+- Бэкенд: http://localhost:8000
+- Документация API: http://localhost:8000/docs
+- Фронтенд: http://localhost:3000
+
+## Локальный запуск (без Docker)
+
+1. Запустите PostgreSQL и Redis вручную.
+2. Примените миграции (если есть):
+   ```bash
+   alembic upgrade head
+   ```
+3. Запустите Uvicorn:
+   ```bash
+   uvicorn src.app:app --reload --host 0.0.0.0 --port 8000
+   ```
+4. В отдельном терминале запустите Celery worker:
+   ```bash
+   celery -A src.tasks.celery_app worker -l info
+   ```
+5. Для фронтенда:
+   ```bash
+   cd frontend
+   npm install
+   npm run dev
+   ```
+
+## Запуск тестов
+
+```bash
+pytest --cov=src -v
+```
+
+Для запуска с покрытием и генерацией отчёта в XML:
+```bash
+pytest --cov=src --cov-report=xml
+```
+
+## Проверка качества кода
+
+```bash
+bandit -r src -ll
+skylos src
+```
+
+## CI/CD (GitHub Actions)
+
+При каждом push и pull-request автоматически запускаются:
+- `bandit` (безопасность)
+- `skylos` (чистота кода)
+- `pytest --cov=src` (тесты с покрытием)
+
+Файл конфигурации: `.github/workflows/ci.yml`
+
+## Переменные окружения для тестов
+
+Тесты используют тестовую БД, задаваемую через переменные:
+```bash
+export POSTGRES_USER=postgres POSTGRES_PASSWORD=postgres POSTGRES_DB=test POSTGRES_HOST=localhost PGPORT=5433
+```
+Если БД запущена в Docker, укажите `POSTGRES_HOST=localhost` (или `127.0.0.1`).
+Для Redis в тестах используется `REDIS_URL=redis://localhost:6379/0`.
