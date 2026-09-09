@@ -1,0 +1,36 @@
+=========================================
+       BASELINE API INTEGRATION TEST      
+=========================================
+
+[1/7] GET /files
+Status: 200
+Initial files count: 0
+
+[2/7] POST /files (Upload)
+Status: 201
+Created File ID: 5d7b2d6a-668c-4750-b0f6-327577008df6
+Processing Status: uploaded
+
+[3/7] Waiting 3 seconds for Celery processing...
+
+[4/7] GET /files/5d7b2d6a-668c-4750-b0f6-327577008df6
+Status: 200
+Processing Status: processed
+Scan Status: clean
+Metadata: {"extension": ".txt", "size_bytes": 34, "mime_type": "text/plain", "line_count": 1, "char_count": 34}
+
+[5/7] GET /alerts
+Status: 200
+Alerts for file 5d7b2d6a-668c-4750-b0f6-327577008df6: [{"id": 1, "file_id": "5d7b2d6a-668c-4750-b0f6-327577008df6", "level": "info", "message": "File processed successfully", "created_at": "2026-09-09T13:16:50.856821Z"}]
+
+[6/7] GET /files/5d7b2d6a-668c-4750-b0f6-327577008df6/download
+Status: 200
+Downloaded content matches uploaded content! PASS
+
+[7/7] DELETE /files/5d7b2d6a-668c-4750-b0f6-327577008df6
+Status: 500
+FAILED: Delete failed with status 500
+
+=========================================
+      ALL BASELINE TESTS COMPLETED       
+=========================================
