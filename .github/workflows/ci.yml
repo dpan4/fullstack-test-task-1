@@ -2,7 +2,7 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [ main, master ]
+    branches: [ main, master, dev ]
   pull_request:
     branches: [ main, master ]
 
@@ -51,12 +51,12 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r backend/requirements.txt bandit skylos pytest pytest-cov
+          pip install -r requirements.txt bandit skylos pytest-cov
 
-      - name: Run Bandit
+      - name: Run Security Audit (Bandit)
         run: bandit -r backend/src -ll
 
-      - name: Run Skylos
+      - name: Run Quality Audit (Skylos)
         run: skylos backend/src
 
       - name: Run Pytest
@@ -68,4 +68,6 @@ jobs:
           PGPORT: 5433
           PGSSLMODE: disable
           REDIS_URL: redis://localhost:6379/0
-        run: cd backend && pytest --cov=src -v --cov-report=xml
+        run: |
+          cd backend
+          pytest --cov=src -v --cov-report=xml
