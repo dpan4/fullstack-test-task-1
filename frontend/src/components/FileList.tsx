@@ -2,6 +2,7 @@
 
 import { Badge, Button, Spinner, Table } from "react-bootstrap";
 import type { FileItem } from "../types";
+import { getDownloadUrl } from "../api/files";
 
 interface FileListProps {
   files: FileItem[];
@@ -89,7 +90,7 @@ export function FileList({ files, isLoading, onRefresh }: FileListProps) {
                 <td className="text-nowrap">
                   <Button
                     as="a"
-                    href={`${process.env.NEXT_PUBLIC_API_BASE || 'http://localhost:8000'}/files/${file.id}/download`}
+                    href={getDownloadUrl(file.id)}
                     variant="outline-primary"
                     size="sm"
                   >

@@ -1,4 +1,4 @@
-import { fetchApi } from "./config";
+import { apiUrl, fetchApi } from "./config";
 import type { FileItem } from "../types";
 
 export async function getFiles(): Promise<FileItem[]> {
@@ -16,5 +16,5 @@ export async function uploadFile(title: string, file: File): Promise<FileItem> {
 }
 
 export function getDownloadUrl(fileId: string): string {
-  return `${process.env.NEXT_PUBLIC_API_BASE || "http://localhost:8000"}/files/${fileId}/download`;
+  return apiUrl(`/files/${fileId}/download`);
 }
