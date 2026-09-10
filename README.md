@@ -42,7 +42,7 @@ REDIS_URL=redis://localhost:6379/0
 ### Вариант А: Docker Compose (рекомендуется)
 
 ```bash
-docker-compose -f docker-compose.dev.yml up -d --build
+docker compose -f docker-compose.dev.yml up -d --build
 ```
 
 После запуска сервисы доступны по адресам:
