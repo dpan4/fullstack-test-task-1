@@ -6,6 +6,7 @@ from uuid import uuid4
 from fastapi import HTTPException, UploadFile, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+from sqlalchemy.pool import NullPool
 
 from src.models import Alert, StoredFile
 from src.validation import validate_file_magic
@@ -19,7 +20,7 @@ DB_URL = (
     os.environ.get('POSTGRES_PASSWORD', '') + "@" + os.environ.get('POSTGRES_HOST', '') + ":" +
     os.environ.get('PGPORT', '') + "/" + os.environ.get('POSTGRES_DB', '')
 )
-engine = create_async_engine(DB_URL, pool_size=0, max_overflow=-1, pool_pre_ping=True, pool_recycle=1, isolation_level="AUTOCOMMIT")
+engine = create_async_engine(DB_URL, poolclass=NullPool, connect_args={"ssl": False}, pool_pre_ping=True)
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
 
 
